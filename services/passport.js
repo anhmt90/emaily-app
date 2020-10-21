@@ -28,7 +28,7 @@ passport.serializeUser((user, done) => {
 
 
 /**
- * Turns an id to a mongoose User model instance
+ * Turn an id to a mongoose User model instance
  */
 passport.deserializeUser((id, done) => {
 	User.findById(id)
@@ -44,7 +44,21 @@ passport.use(
 	new GoogleStrategy({
 		clientID: keys.googleClientID,
 		clientSecret: keys.googleClientSecret,
-		callbackURL: '/auth/google/callback'
+		/**
+		 * 1st cause: relative path makes Google Authorized redirect URI to be HTPP (instead of HTTPS)
+		 * 2nd cause: The GoogleStrategy assumes that requests from browser ever went through any type
+		 * 				of proxy, then the request should no longer be HTTPS.
+		 * (More on this in vid V.6)
+		 * Solution: Add config option `proxy: true` to GoogleStrategy to tell it to trust any proxies that the
+		 * 				browser encounters
+		 * Alt. solution: spell out the absolute google callback path to Heroku server
+		 */
+		callbackURL: '/auth/google/callback',
+		/**
+    	 * Fixing Google redirect URI converted to HTTP instead of HTTPS when
+     	 * deployed on Heroku
+     	 */
+		proxy: true
 	}, (accessToken, refreshToken, profile, done) => {
 		User.findOne({ googleId: profile.id }).then((existingUser) => {
 			if (existingUser) {
