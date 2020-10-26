@@ -3,6 +3,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const mongoose = require('mongoose');
 const keys = require('../config/keys');
 
+const absoluteURI = process.env.NODE_ENV === 'production' ? 'http://emaily-app-v01.herokuapp.com': 'http://localhost:8080';
 /**
  * moogoose.model() with 1 arg means FETCHING model
  * moogoose.model() with 2 args means PUSH model into mongoose
@@ -53,7 +54,7 @@ passport.use(
 		 * 				browser encounters
 		 * Alt. solution: spell out the absolute google callback path to Heroku server
 		 */
-		callbackURL: '/auth/google/callback',
+		callbackURL: absoluteURI + '/auth/google/callback',
 		/**
 		 * Fixing Google redirect URI converted to HTTP instead of HTTPS when
 		   * deployed on Heroku
