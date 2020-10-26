@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require('mongoose');
 const cookieSession = require('cookie-session');
 const passport = require('passport');
+// const bodyParser = require('body-parser');
 const keys = require('./config/keys');
 /**
  * BE AWARE: Order of require statements can result in errors
@@ -19,9 +20,11 @@ mongoose.connect(keys.mongoURI, { useNewUrlParser: true, useUnifiedTopology: tru
  */
 const app = express();
 
+/********************************************** MIDDLEWARE  ************************************************/
+
+// app.use(bodyParser.json());
+app.use(express.json());
 /**
- * MIDDLEWARE
- * 
  * Set up cookie for auth by injecting 3 middlewarees for pre-processing incoming requests
  * To grasp more about wiring up middlewares into Express, watch vid 4.17 again
  * 
@@ -31,6 +34,7 @@ const app = express();
  * mongodb user id to feed it into the deserializeUser() function. After this being deserialized, 
  * we'll get back the user object attached to req object (req.user)
  */
+
 app.use(
     cookieSession({
         maxAge: 30 * 24 * 60 * 60 * 1000,
@@ -40,10 +44,42 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+/********************************************* ROUTE HANDLERS  *********************************************/
+/**************************  The order of 3 types of route handling is ESSENTIAL ***************************/
 /**
- * Run the routes defined in './routes/auth-routes'
+ * Run the exported functions related to routes defined in './routes/*' directly
+ * These routes are declared and handled by Express directly (not by React Router)
  */
-require('./routes/auth-routes')(app);
+require('./routes/authRoutes')(app);
+require('./routes/billingRoutes')(app);
+
+/**
+ * Run in production env 
+ */
+if(process.env.NODE_ENV === 'production') {
+    /**
+     * Vid 9.2
+     * Have Express serve up production assets (main.js, main.css files)
+     * 
+     * Come into client/build to look for those assets
+     */
+    app.use(express.static('client/build'));
+
+     /**
+      * If an incoming request with a specific route does not match up with the
+      * assets in client/build, Express will continue on down and send the index.html
+      * 
+      * Have Express serve up the index.html file if it doesn;t recognize 
+      * the route
+      */
+     const path = require('path');
+     app.get('*', (re, res) => {
+         res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+     })
+}
+/******************************************** LISTEN ****************************************************/
+
+
 
 /**
  * 1. Listen to a dynamic port that Heroku will give us at runtime

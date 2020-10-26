@@ -5,7 +5,24 @@ module.exports = (app) => {
         scope: ['profile', 'email'],
     }));
 
-    app.get('/auth/google/callback', passport.authenticate('google'));
+    /**
+     * Redirect the request to GoogleStrategy for authentication, however, when the auth is 
+     * finished, the passport.authenticate() middleware still has no idea what to do next with
+     * the request, that's why we get a "Cannot GET /auth/google/callback" error message after 
+     * being logged in. 
+     * Solution: chain on another route handler to the /auth/google/callback here
+     */
+    app.get(
+        '/auth/google/callback',
+        passport.authenticate('google'),
+        (req, res) => {
+            res.redirect('/surveys');
+        }
+    );
+
+    // app.get('/surveys', (req, res) => {
+    //     res.redirect('/surveys');
+    // });
 
     /**
      * Beside user property, passport also attaches a couple of other functions to req object,
@@ -16,7 +33,7 @@ module.exports = (app) => {
          * purges the user id in req, so passport no longer knows who is the user anymore
          */
         req.logout();
-        res.send(req.user);
+        res.redirect('/');
     });
     /**
      * Thanks to cookieSession and passport, req is now attached with a user propterty, which 

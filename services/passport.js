@@ -32,7 +32,7 @@ passport.serializeUser((user, done) => {
  */
 passport.deserializeUser((id, done) => {
 	User.findById(id)
-		.then((user => {done(null, user)}));
+		.then((user => { done(null, user); }));
 });
 
 
@@ -55,24 +55,22 @@ passport.use(
 		 */
 		callbackURL: '/auth/google/callback',
 		/**
-    	 * Fixing Google redirect URI converted to HTTP instead of HTTPS when
-     	 * deployed on Heroku
-     	 */
+		 * Fixing Google redirect URI converted to HTTP instead of HTTPS when
+		   * deployed on Heroku
+		   */
 		proxy: true
-	}, (accessToken, refreshToken, profile, done) => {
-		User.findOne({ googleId: profile.id }).then((existingUser) => {
-			if (existingUser) {
-				done(null, existingUser);
-			} else {
-				/**
-				 * create MODEL INSTANCE and sav it into mongodb
-				 * the user model instance inside then is considered to be more up-todate then the instance 
-				 * created by 'new User' although they are both referring to the same record inside mongodb
-				 */
-				new User({ googleId: profile.id }).save()
-					.then(user => done(null, user));
-			}
-		});
+	}, async (accessToken, refreshToken, profile, done) => {
+		const existingUser = await User.findOne({ googleId: profile.id });
+		if (existingUser)
+			return done(null, existingUser);
+
+		/**
+		 * create MODEL INSTANCE and sav it into mongodb
+		 * the user model instance inside then is considered to be more up-todate then the instance 
+		 * created by 'new User' although they are both referring to the same record inside mongodb
+		 */
+		const user = await new User({ googleId: profile.id }).save();
+		done(null, user);
 
 	})
 );
