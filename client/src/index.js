@@ -9,7 +9,16 @@ import { createStore, applyMiddleware } from 'redux';
 import reduxThunk from 'redux-thunk';
 
 import App from './components/App';
-import reducers from './reducers'
+import reducers from './reducers';
+
+/**
+ * Testing code to test out the back-end routes, instead of using REST client
+ * like Postman through the entire OAuth flow 
+ * 
+ * After assigning window.axios we can use axios lib insode the browser
+ */
+import axios from 'axios';
+window.axios = axios;
 
 const store = createStore(reducers, {}, applyMiddleware(reduxThunk));
 
@@ -19,7 +28,7 @@ const store = createStore(reducers, {}, applyMiddleware(reduxThunk));
  * gets some new states produced inside of it, the provider will inform all of its children components,
  * so essentially everything that the App component renders, that some new state is available and it will update all
  * of those different components with the new state.
- */ 
+ */
 ReactDOM.render(
     <Provider store={store}>
         <App />

@@ -8,6 +8,7 @@ const keys = require('./config/keys');
  * BE AWARE: Order of require statements can result in errors
  */
 require('./models/User');
+require('./models/Survey');
 require('./services/passport');
 
 
@@ -52,6 +53,7 @@ app.use(passport.session());
  */
 require('./routes/authRoutes')(app);
 require('./routes/billingRoutes')(app);
+require('./routes/surveyRoutes')(app);
 
 /**
  * Run in production env 

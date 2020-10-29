@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { FETCH_USER } from './types';
+import { FETCH_USER, FETCH_SURVEYS } from './types';
 
 /**
  * REMEMBER: any time we want to communicate something to the backend API, we're always gonna make that request inside an action creator
@@ -32,5 +32,19 @@ export const handleToken = token => async dispatch => {
     const response = await axios.post('/api/stripe', token);
     console.log("RESPONSE: ", response);
     /** update and get back the updated user model */
-    dispatch({ type: FETCH_USER,  payload: response.data })
-}
+    dispatch({ type: FETCH_USER, payload: response.data });
+};
+
+export const submitSurvey = (values, history) => async dispatch => {
+    const res = await axios.post('/api/surveys', values);
+
+    history.push('/surveys');
+    dispatch({ type: FETCH_USER, payload: res.data });
+};
+
+
+export const fetchSurveys = () => async dispatch => {
+    const res = await axios.get('/api/surveys');
+    dispatch({ type: FETCH_SURVEYS, payload: res.data });
+};
+
